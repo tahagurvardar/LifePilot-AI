@@ -1,7 +1,9 @@
 const currencyLocales = {
   AZN: "az-Latn-AZ",
   TRY: "tr-TR",
-  USD: "en-US"
+  USD: "en-US",
+  EUR: "de-DE",
+  GBP: "en-GB"
 };
 
 export function formatCurrency(amount, currency = "AZN") {
@@ -108,31 +110,167 @@ export function buildCategorySeries(transactions) {
     .slice(0, 6);
 }
 
-export function buildAdvisorResponse(question, data, currency) {
-  const normalizedQuestion = question.toLowerCase();
+export function calculateBudgetUsage(data) {
   const summary = calculateFinanceSummary(data);
+  const limit = Number(data.budget?.monthlyLimit ?? 0);
+  const spent = summary.monthlyExpenses;
+  const usage = limit > 0 ? (spent / limit) * 100 : 0;
+
+  return {
+    limit,
+    spent,
+    remaining: Math.max(limit - spent, 0),
+    usage,
+    overBudget: limit > 0 && spent > limit
+  };
+}
+
+// 0-100 score blending savings rate, budget adherence, and runway.
+export function calculateFinancialHealthScore(data) {
+  const summary = calculateFinanceSummary(data);
+  const budget = calculateBudgetUsage(data);
+
+  const savingsScore = Math.min(summary.savingsRate, 40) / 40; // up to 40% savings rate = full marks
+  const budgetScore = budget.limit > 0 ? Math.max(0, 1 - budget.usage / 100) : 0.6;
+  const goalProgress = data.savingsGoal?.target
+    ? Math.min(data.savingsGoal.current / data.savingsGoal.target, 1)
+    : 0.5;
+
+  const score = savingsScore * 45 + budgetScore * 30 + goalProgress * 25;
+  return Math.round(Math.min(Math.max(score, 0), 100));
+}
+
+// 0-100 score blending progress score, skill levels, and pipeline activity.
+export function calculateCareerReadiness(data) {
+  const career = data.career ?? {};
+  const progress = Number(career.progressScore ?? 0);
+  const skillLevels = career.skillProgress ?? [];
+  const avgSkill = skillLevels.length
+    ? skillLevels.reduce((sum, skill) => sum + Number(skill.level || 0), 0) / skillLevels.length
+    : progress;
+  const pipeline = (career.applications ?? []).filter((job) =>
+    ["Applied", "Interview", "Offer"].includes(job.status)
+  ).length;
+  const pipelineScore = Math.min(pipeline / 4, 1) * 100;
+
+  const score = progress * 0.5 + avgSkill * 0.35 + pipelineScore * 0.15;
+  return Math.round(Math.min(Math.max(score, 0), 100));
+}
+
+const ACTIVITY_LABELS = {
+  income: "Income recorded",
+  expense: "Expense logged"
+};
+
+// Combined, date-sorted feed from transactions and job applications.
+export function buildActivityFeed(data, limit = 6) {
+  const transactionEvents = (data.transactions ?? []).map((transaction) => ({
+    id: `tx-${transaction.id}`,
+    kind: "transaction",
+    type: transaction.type,
+    title: ACTIVITY_LABELS[transaction.type] ?? "Transaction",
+    detail: transaction.note || transaction.category,
+    amount: transaction.amount,
+    category: transaction.category,
+    date: transaction.date
+  }));
+
+  const applicationEvents = (data.career?.applications ?? []).map((application) => ({
+    id: `job-${application.id}`,
+    kind: "application",
+    status: application.status,
+    title: `${application.company} - ${application.status}`,
+    detail: application.role,
+    date: application.date
+  }));
+
+  return [...transactionEvents, ...applicationEvents]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, limit);
+}
+
+// A short "weekly AI insight" string for the dashboard card.
+export function buildWeeklyInsight(data, currency) {
+  const summary = calculateFinanceSummary(data);
+  const budget = calculateBudgetUsage(data);
+  const surplus = Math.max(summary.monthlyIncome - summary.monthlyExpenses, 0);
+  const missingSkill = data.career?.missingSkills?.[0] ?? "portfolio storytelling";
+
+  const budgetLine = budget.overBudget
+    ? `You are ${formatCurrency(budget.spent - budget.limit, currency)} over your monthly budget, so trim one flexible category this week.`
+    : `You are tracking inside your monthly budget with ${formatCurrency(budget.remaining, currency)} of room left.`;
+
+  return `${budgetLine} Protect ${formatCurrency(
+    surplus,
+    currency
+  )} of surplus and spend 3 focused hours on ${missingSkill} to push your career score up.`;
+}
+
+const ADVISOR_TYPE_HINTS = {
+  finance: ["save", "budget", "spend", "money", "expense", "balance"],
+  career: ["career", "job", "skill", "role", "interview", "promotion"],
+  saving: ["saving", "save plan", "goal", "emergency", "fund"],
+  study: ["study", "learn", "course", "practice", "skill plan"]
+};
+
+function detectType(question) {
+  const normalized = question.toLowerCase();
+  for (const [type, hints] of Object.entries(ADVISOR_TYPE_HINTS)) {
+    if (hints.some((hint) => normalized.includes(hint))) return type;
+  }
+  return "general";
+}
+
+/**
+ * Generates a smart mock advisor reply. An explicit `type` (finance, career,
+ * saving, study) takes priority; otherwise the type is inferred from the text.
+ * Demo only — not real financial advice.
+ */
+export function buildAdvisorResponse(question, data, currency, type = "auto") {
+  const summary = calculateFinanceSummary(data);
+  const budget = calculateBudgetUsage(data);
   const topExpense = buildCategorySeries(data.transactions)[0];
-  const missingSkill = data.career.missingSkills[0] ?? "portfolio storytelling";
-  const activeApplications = data.career.applications.filter((job) =>
+  const missingSkill = data.career?.missingSkills?.[0] ?? "portfolio storytelling";
+  const targetRole = data.career?.targetRole ?? "your target role";
+  const activeApplications = (data.career?.applications ?? []).filter((job) =>
     ["Applied", "Interview"].includes(job.status)
   ).length;
 
-  if (normalizedQuestion.includes("save") || normalizedQuestion.includes("budget")) {
-    return `Your current savings rate is ${formatPercent(summary.savingsRate)}. Keep the learning budget, but cap the largest expense category${
-      topExpense ? `, ${topExpense.name}, near ${formatCurrency(topExpense.value * 0.85, currency)}` : ""
-    } next month and move the difference into "${data.savingsGoal.name}".`;
+  const resolvedType = type && type !== "auto" ? type : detectType(question);
+
+  if (resolvedType === "finance") {
+    return `Your savings rate is ${formatPercent(summary.savingsRate)} and you have ${formatCurrency(
+      budget.remaining,
+      currency
+    )} left in this month's budget. Cap ${
+      topExpense ? `"${topExpense.name}" near ${formatCurrency(topExpense.value * 0.85, currency)}` : "your largest category"
+    } and automate the difference into savings.`;
   }
 
-  if (normalizedQuestion.includes("career") || normalizedQuestion.includes("job")) {
-    return `For ${data.career.targetRole}, focus this week on ${missingSkill}. You have ${activeApplications} active applications, so a strong move is to ship one portfolio case study and send two tailored follow-ups.`;
+  if (resolvedType === "saving") {
+    const gap = Math.max((data.savingsGoal?.target ?? 0) - (data.savingsGoal?.current ?? 0), 0);
+    const monthly = Math.max(summary.monthlyIncome - summary.monthlyExpenses, 0);
+    const months = monthly > 0 ? Math.ceil(gap / monthly) : null;
+    return `To finish "${data.savingsGoal?.name ?? "your goal"}" you still need ${formatCurrency(
+      gap,
+      currency
+    )}. At your current surplus of ${formatCurrency(monthly, currency)}/month that is roughly ${
+      months ? `${months} month${months > 1 ? "s" : ""}` : "a few months"
+    }. Set an automatic transfer on payday so the plan runs itself.`;
   }
 
-  if (normalizedQuestion.includes("resume") || normalizedQuestion.includes("cv")) {
-    return `Your resume should connect money and career impact: quantify roadmap results, mention analytics tools, and add one AI product project that maps directly to ${data.career.targetRole}.`;
+  if (resolvedType === "career") {
+    return `For ${targetRole}, build "${missingSkill}" first. You have ${activeApplications} active application${
+      activeApplications === 1 ? "" : "s"
+    } — ship one portfolio case study this week and send two tailored follow-ups to keep momentum.`;
   }
 
-  return `Your strongest next step is a balanced sprint: protect ${formatCurrency(
+  if (resolvedType === "study") {
+    return `A focused study plan for ${targetRole}: spend week 1 on fundamentals of "${missingSkill}", week 2 building a small project, and week 3 writing it up as a case study. Aim for 4-5 hours per week and track it like a sprint.`;
+  }
+
+  return `Balanced next step: protect ${formatCurrency(
     Math.max(summary.monthlyIncome - summary.monthlyExpenses, 0),
     currency
-  )} of monthly surplus, practice ${missingSkill}, and keep your application pipeline warm with one high-quality follow-up today.`;
+  )} of monthly surplus, practice "${missingSkill}", and keep your application pipeline warm with one high-quality follow-up today.`;
 }

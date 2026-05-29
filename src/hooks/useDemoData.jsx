@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { createDemoData } from "../data/demoData";
+import { createDemoData, hydrateDemoData } from "../data/demoData";
 import { createId, readStorage, writeStorage } from "../utils/storage";
 import { useAuth } from "./useAuth";
 
@@ -9,14 +9,18 @@ function dataKey(userId) {
   return `lifepilot_data_${userId}`;
 }
 
+function loadData(user) {
+  if (!user) return createDemoData();
+  const stored = readStorage(dataKey(user.id), null);
+  return hydrateDemoData(stored, user);
+}
+
 export function DemoDataProvider({ children }) {
   const { currentUser } = useAuth();
   const [storageKey, setStorageKey] = useState(() =>
     currentUser ? dataKey(currentUser.id) : null
   );
-  const [data, setData] = useState(() =>
-    currentUser ? readStorage(dataKey(currentUser.id), createDemoData(currentUser)) : createDemoData()
-  );
+  const [data, setData] = useState(() => loadData(currentUser));
 
   useEffect(() => {
     if (!currentUser) {
@@ -25,9 +29,8 @@ export function DemoDataProvider({ children }) {
       return;
     }
 
-    const nextKey = dataKey(currentUser.id);
-    setData(readStorage(nextKey, createDemoData(currentUser)));
-    setStorageKey(nextKey);
+    setData(loadData(currentUser));
+    setStorageKey(dataKey(currentUser.id));
   }, [currentUser]);
 
   useEffect(() => {
@@ -61,6 +64,13 @@ export function DemoDataProvider({ children }) {
     }));
   }
 
+  function updateBudget(updates) {
+    setData((current) => ({
+      ...current,
+      budget: { ...current.budget, ...updates }
+    }));
+  }
+
   function addTransaction(transaction) {
     setData((current) => ({
       ...current,
@@ -73,6 +83,21 @@ export function DemoDataProvider({ children }) {
         },
         ...current.transactions
       ]
+    }));
+  }
+
+  function updateTransaction(id, updates) {
+    setData((current) => ({
+      ...current,
+      transactions: current.transactions.map((transaction) =>
+        transaction.id === id
+          ? {
+              ...transaction,
+              ...updates,
+              amount: updates.amount != null ? Number(updates.amount) : transaction.amount
+            }
+          : transaction
+      )
     }));
   }
 
@@ -149,6 +174,22 @@ export function DemoDataProvider({ children }) {
     }));
   }
 
+  function toggleRoadmapStep(id) {
+    setData((current) => ({
+      ...current,
+      career: {
+        ...current.career,
+        roadmap: (current.career.roadmap ?? []).map((step) =>
+          step.id === id ? { ...step, done: !step.done } : step
+        )
+      }
+    }));
+  }
+
+  function resetDemoData() {
+    setData(createDemoData(currentUser ?? undefined));
+  }
+
   const value = useMemo(
     () => ({
       data,
@@ -157,11 +198,15 @@ export function DemoDataProvider({ children }) {
       addTransaction,
       removeSkill,
       removeTransaction,
+      resetDemoData,
+      toggleRoadmapStep,
       updateApplication,
+      updateBudget,
       updateCareer,
       updatePreferences,
       updateProfile,
-      updateSavingsGoal
+      updateSavingsGoal,
+      updateTransaction
     }),
     [data]
   );

@@ -1,4 +1,6 @@
+import { BriefcaseBusiness } from "lucide-react";
 import { jobStatuses } from "../data/demoData";
+import { EmptyState } from "./EmptyState";
 
 const statusStyles = {
   Applied: "bg-indigo-500/10 text-indigo-700 dark:text-indigo-300",
@@ -9,6 +11,16 @@ const statusStyles = {
 };
 
 export function ApplicationTable({ applications, onUpdate }) {
+  if (!applications.length) {
+    return (
+      <EmptyState
+        icon={BriefcaseBusiness}
+        title="No applications tracked"
+        description="Add a company and role above to start tracking your job pipeline."
+      />
+    );
+  }
+
   return (
     <div className="overflow-x-auto rounded-xl border border-neutral-200 dark:border-white/10">
       <table className="min-w-full divide-y divide-neutral-200 text-left text-sm dark:divide-white/10">

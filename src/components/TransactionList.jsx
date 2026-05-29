@@ -1,12 +1,19 @@
-import { ArrowDownRight, ArrowUpRight, Trash2 } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Pencil, ReceiptText, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { EmptyState } from "./EmptyState";
+import { TransactionForm } from "./TransactionForm";
 import { formatCurrency } from "../utils/finance";
 
-export function TransactionList({ transactions, currency, onRemove }) {
+export function TransactionList({ transactions, currency, onRemove, onUpdate, emptyMessage }) {
+  const [editingId, setEditingId] = useState(null);
+
   if (!transactions.length) {
     return (
-      <div className="rounded-xl border border-dashed border-neutral-300 p-8 text-center text-sm text-neutral-500 dark:border-white/15 dark:text-neutral-400">
-        No transactions match this filter.
-      </div>
+      <EmptyState
+        icon={ReceiptText}
+        title="No transactions yet"
+        description={emptyMessage ?? "Add your first income or expense to see it listed here."}
+      />
     );
   }
 
@@ -16,6 +23,22 @@ export function TransactionList({ transactions, currency, onRemove }) {
         {transactions.map((transaction) => {
           const isIncome = transaction.type === "income";
           const Icon = isIncome ? ArrowUpRight : ArrowDownRight;
+
+          if (editingId === transaction.id) {
+            return (
+              <div key={transaction.id} className="bg-neutral-50 p-4 dark:bg-neutral-900">
+                <TransactionForm
+                  mode="edit"
+                  initialValues={transaction}
+                  onSubmit={(updates) => {
+                    onUpdate?.(transaction.id, updates);
+                    setEditingId(null);
+                  }}
+                  onCancel={() => setEditingId(null)}
+                />
+              </div>
+            );
+          }
 
           return (
             <div
@@ -59,14 +82,26 @@ export function TransactionList({ transactions, currency, onRemove }) {
               <p className="hidden text-sm text-neutral-500 dark:text-neutral-400 sm:block">
                 {transaction.date}
               </p>
-              <button
-                type="button"
-                onClick={() => onRemove(transaction.id)}
-                aria-label="Remove transaction"
-                className="focus-ring rounded-lg p-2 text-neutral-400 transition hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/10 dark:hover:text-rose-300"
-              >
-                <Trash2 size={17} />
-              </button>
+              <div className="flex items-center gap-1">
+                {onUpdate && (
+                  <button
+                    type="button"
+                    onClick={() => setEditingId(transaction.id)}
+                    aria-label="Edit transaction"
+                    className="focus-ring rounded-lg p-2 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700 dark:hover:bg-white/10 dark:hover:text-white"
+                  >
+                    <Pencil size={16} />
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => onRemove(transaction.id)}
+                  aria-label="Remove transaction"
+                  className="focus-ring rounded-lg p-2 text-neutral-400 transition hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/10 dark:hover:text-rose-300"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
             </div>
           );
         })}

@@ -43,7 +43,7 @@ export function AuthProvider({ children }) {
       email: normalizedEmail,
       password,
       role: "Growth Planner",
-      location: "Baku, Azerbaijan"
+      country: "United States"
     };
 
     setUsers((current) => [...current, user]);
