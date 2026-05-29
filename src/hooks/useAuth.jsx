@@ -22,7 +22,7 @@ export function AuthProvider({ children }) {
     );
 
     if (!user) {
-      return { ok: false, error: "Email or password is not correct." };
+      return { ok: false, errorKey: "auth.errorInvalid" };
     }
 
     setSession({ userId: user.id, loggedInAt: new Date().toISOString() });
@@ -34,7 +34,7 @@ export function AuthProvider({ children }) {
     const exists = users.some((user) => user.email.toLowerCase() === normalizedEmail);
 
     if (exists) {
-      return { ok: false, error: "An account with this email already exists." };
+      return { ok: false, errorKey: "auth.errorExists" };
     }
 
     const user = {

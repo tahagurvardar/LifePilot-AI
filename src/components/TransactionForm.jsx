@@ -1,6 +1,7 @@
 import { PlusCircle, Save, X } from "lucide-react";
 import { useState } from "react";
 import { transactionCategories } from "../data/demoData";
+import { useI18n } from "../hooks/useI18n";
 import { Button } from "./Button";
 
 const today = () => new Date().toISOString().slice(0, 10);
@@ -43,6 +44,7 @@ function validate(form) {
  * Pass `initialValues` + `mode="edit"` to reuse it inside the list.
  */
 export function TransactionForm({ onSubmit, onCancel, initialValues, mode = "add" }) {
+  const { t } = useI18n();
   const [form, setForm] = useState(() => ({ ...emptyForm(), ...initialValues }));
   const [errors, setErrors] = useState({});
 
@@ -71,10 +73,10 @@ export function TransactionForm({ onSubmit, onCancel, initialValues, mode = "add
         value={form.type}
         onChange={(event) => updateField("type", event.target.value)}
         className="field"
-        aria-label="Transaction type"
+        aria-label={t("finance.expense")}
       >
-        <option value="expense">Expense</option>
-        <option value="income">Income</option>
+        <option value="expense">{t("finance.expense")}</option>
+        <option value="income">{t("finance.income")}</option>
       </select>
 
       <div>
@@ -84,9 +86,9 @@ export function TransactionForm({ onSubmit, onCancel, initialValues, mode = "add
           className="field"
           min="1"
           step="0.01"
-          placeholder="Amount"
+          placeholder={t("finance.amount")}
           type="number"
-          aria-label="Amount"
+          aria-label={t("finance.amount")}
           aria-invalid={Boolean(errors.amount)}
         />
         {errors.amount && (
@@ -98,7 +100,7 @@ export function TransactionForm({ onSubmit, onCancel, initialValues, mode = "add
         value={form.category}
         onChange={(event) => updateField("category", event.target.value)}
         className="field"
-        aria-label="Category"
+        aria-label={t("finance.category")}
       >
         {transactionCategories.map((category) => (
           <option key={category} value={category}>
@@ -113,7 +115,7 @@ export function TransactionForm({ onSubmit, onCancel, initialValues, mode = "add
           onChange={(event) => updateField("date", event.target.value)}
           className="field"
           type="date"
-          aria-label="Date"
+          aria-label={t("career.date")}
           aria-invalid={Boolean(errors.date)}
         />
         {errors.date && (
@@ -124,10 +126,10 @@ export function TransactionForm({ onSubmit, onCancel, initialValues, mode = "add
       <div className="flex gap-2">
         <Button type="submit" variant="accent" className="flex-1">
           {isEdit ? <Save size={18} /> : <PlusCircle size={18} />}
-          {isEdit ? "Save" : "Add"}
+          {isEdit ? t("common.save") : t("common.add")}
         </Button>
         {isEdit && onCancel && (
-          <Button type="button" variant="secondary" onClick={onCancel} aria-label="Cancel edit">
+          <Button type="button" variant="secondary" onClick={onCancel} aria-label={t("common.cancel")}>
             <X size={18} />
           </Button>
         )}
@@ -137,9 +139,9 @@ export function TransactionForm({ onSubmit, onCancel, initialValues, mode = "add
         value={form.note}
         onChange={(event) => updateField("note", event.target.value)}
         className="field md:col-span-2 xl:col-span-5"
-        placeholder="Note (optional)"
+        placeholder={t("finance.note")}
         type="text"
-        aria-label="Note"
+        aria-label={t("finance.note")}
       />
     </form>
   );

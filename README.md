@@ -1,8 +1,8 @@
 # LifePilot AI
 
-> A portfolio-ready, frontend-only SaaS demo that combines **personal finance** and **career growth** into a single, polished dashboard — with AI-style mock guidance.
+> A portfolio-ready, frontend-only SaaS demo that combines **personal finance** and **career growth** into a single, polished dashboard — with AI-style mock guidance, PDF report export, and English/Turkish language support.
 
-LifePilot AI is built with React, Vite, Tailwind CSS, React Router, and Recharts. All data is stored in the browser via `localStorage`, so the app runs fully without a backend and deploys cleanly to Vercel.
+LifePilot AI is built with React, Vite, Tailwind CSS, React Router, and Recharts. All data is stored in the browser via `localStorage`, so the app runs fully without a backend, **no database, and no real AI API**, and deploys cleanly to Vercel.
 
 ---
 
@@ -18,7 +18,9 @@ LifePilot AI imagines a single workspace where someone can manage their money an
 - **Career** — target role, skill progress bars, skills map, project recommendation cards, an interactive 3-month roadmap, and a job application tracker (Applied / Interview / Offer / Rejected).
 - **Resume Analyzer** — overall score out of 100, section scores (Summary Quality, Skills Match, Experience Clarity, Project Strength), a missing-keywords list, and a copyable improved summary.
 - **AI Advisor** — suggestion types (Finance advice, Career advice, Saving plan, Study plan), smarter mock responses generated from your data, conversation history persisted in `localStorage`, and a clear demo disclaimer.
-- **Settings** — profile photo placeholder (initials), editable Name / Role / Country / Currency / Target role, language, theme switching, and a one-click demo-data reset.
+- **Settings** — profile photo placeholder (initials), editable Name / Role / Country / Currency / Target role, language switch, theme switching, PDF export, and a one-click demo-data reset.
+- **PDF report export** — generate a clean, professional PDF (via jsPDF) summarizing finance, career, and resume data, fully client-side. Available on the Dashboard and Settings, with success/error feedback. Includes a clear note that the AI Advisor is demo/mock, not real financial advice.
+- **English / Turkish language switch** — a lightweight, frontend-only i18n layer. The selected language persists to `localStorage`, defaults to English, and updates the whole UI instantly without breaking routes or auth. User-entered data is never translated.
 - **Polish** — light/dark mode, reusable UI components, loading and empty states, and a safe `localStorage` migration that resets stale demo data after deploys.
 
 ## Tech Stack
@@ -31,6 +33,8 @@ LifePilot AI imagines a single workspace where someone can manage their money an
 | Routing | React Router 6 |
 | Charts | Recharts |
 | Icons | lucide-react |
+| PDF export | jsPDF (client-side) |
+| i18n | Custom hook + dictionary (`src/i18n`) |
 | Data | `localStorage` (demo only) |
 
 ## Live Demo
@@ -80,13 +84,23 @@ The app is frontend-only and ready to deploy on Vercel as a Vite project (build 
 
 ```
 src/
-  components/   Reusable UI (Card, Button, Badge, ScoreRing, EmptyState, Footer, ...)
+  components/   Reusable UI (Card, Button, Badge, ScoreRing, EmptyState, Footer, ExportReportButton, ...)
   data/         Demo data + default profile (demoData.js)
-  hooks/        Auth, demo data, theme, and localStorage hooks
+  hooks/        Auth, demo data, theme, i18n, and localStorage hooks
+  i18n/         Translation dictionary (en/tr) + translate helper
   layouts/      Dashboard shell (sidebar + top navbar)
   pages/        Landing, Login, Register, Dashboard, Finance, Career, Resume, Advisor, Settings
-  utils/        Finance math, scoring, advisor logic, storage, migrations
+  utils/        Finance math, scoring, advisor logic, PDF report, storage, migrations
 ```
+
+## Internationalization (i18n)
+
+The UI ships in **English (default)** and **Turkish**. Language is a global, app-level
+setting stored under the `lifepilot_lang` key in `localStorage` and managed by
+`I18nProvider` (`src/hooks/useI18n.jsx`). Components read strings with the
+`t("namespace.key")` helper; missing Turkish keys fall back to English. Add or edit
+copy in `src/i18n/translations.js`. User-entered data and enum values (job statuses,
+categories) are intentionally left untranslated.
 
 ## Future Improvements
 

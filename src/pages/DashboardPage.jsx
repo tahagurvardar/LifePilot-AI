@@ -22,11 +22,13 @@ import {
 } from "recharts";
 import { Badge } from "../components/Badge";
 import { Card } from "../components/Card";
+import { ExportReportButton } from "../components/ExportReportButton";
 import { PageHeader } from "../components/PageHeader";
 import { ProgressBar } from "../components/ProgressBar";
 import { ScoreRing } from "../components/ScoreRing";
 import { StatCard } from "../components/StatCard";
 import { useDemoData } from "../hooks/useDemoData";
+import { useI18n } from "../hooks/useI18n";
 import {
   buildActivityFeed,
   buildMonthlySeries,
@@ -40,10 +42,10 @@ import {
 } from "../utils/finance";
 
 const quickActions = [
-  { to: "/app/finance", label: "Add transaction", icon: Plus, tone: "emerald" },
-  { to: "/app/career", label: "Track a job", icon: BriefcaseBusiness, tone: "indigo" },
-  { to: "/app/resume", label: "Analyze resume", icon: FileText, tone: "amber" },
-  { to: "/app/advisor", label: "Ask the advisor", icon: Sparkles, tone: "rose" }
+  { to: "/app/finance", labelKey: "dashboard.addTransaction", icon: Plus, tone: "emerald" },
+  { to: "/app/career", labelKey: "dashboard.trackJob", icon: BriefcaseBusiness, tone: "indigo" },
+  { to: "/app/resume", labelKey: "dashboard.analyzeResume", icon: FileText, tone: "amber" },
+  { to: "/app/advisor", labelKey: "dashboard.askAdvisor", icon: Sparkles, tone: "rose" }
 ];
 
 const actionTones = {
@@ -62,6 +64,7 @@ function statusTone(status) {
 
 export default function DashboardPage() {
   const { data } = useDemoData();
+  const { t } = useI18n();
   const currency = data.preferences.currency;
   const firstName = (data.profile.name || "there").split(" ")[0];
   const summary = calculateFinanceSummary(data);
@@ -76,64 +79,68 @@ export default function DashboardPage() {
   return (
     <div>
       <PageHeader
-        title={`Good to see you, ${firstName}`}
-        description="Your finance and career signals are synced into one practical command center."
+        title={t("dashboard.greeting", { name: firstName })}
+        description={t("dashboard.subtitle")}
+        action={<ExportReportButton />}
       />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
-          title="Total Balance"
+          title={t("dashboard.totalBalance")}
           value={formatCurrency(summary.totalBalance, currency)}
-          detail="All demo transactions plus opening balance"
+          detail={t("dashboard.totalBalanceDetail")}
           icon={WalletCards}
           color="emerald"
         />
         <StatCard
-          title="Monthly Income"
+          title={t("dashboard.monthlyIncome")}
           value={formatCurrency(summary.monthlyIncome, currency)}
-          detail="Latest active month"
+          detail={t("dashboard.monthlyIncomeDetail")}
           icon={TrendingUp}
           color="indigo"
         />
         <StatCard
-          title="Monthly Expenses"
+          title={t("dashboard.monthlyExpenses")}
           value={formatCurrency(summary.monthlyExpenses, currency)}
           detail={
             budget.limit > 0
-              ? `${formatPercent(budget.usage)} of ${formatCurrency(budget.limit, currency)} budget`
-              : "Track categories before they drift"
+              ? t("dashboard.expensesBudgetDetail", {
+                  usage: formatPercent(budget.usage),
+                  limit: formatCurrency(budget.limit, currency)
+                })
+              : t("dashboard.expensesDriftDetail")
           }
           icon={ReceiptText}
           color="rose"
         />
         <StatCard
-          title="Savings Rate"
+          title={t("dashboard.savingsRate")}
           value={formatPercent(summary.savingsRate)}
-          detail="Surplus divided by income"
+          detail={t("dashboard.savingsRateDetail")}
           icon={PiggyBank}
           color="amber"
         />
       </div>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-3">
-        <Card title="Financial health" description="Savings, budget, and goal progress.">
+        <Card title={t("dashboard.financialHealth")} description={t("dashboard.financialHealthDesc")}>
           <div className="flex items-center gap-5">
             <ScoreRing value={healthScore} tone="emerald" label="/ 100" />
             <div className="space-y-2 text-sm">
               <p className="text-neutral-500 dark:text-neutral-400">
-                Savings rate{" "}
+                {t("dashboard.savingsRateLabel")}{" "}
                 <span className="font-bold text-neutral-950 dark:text-white">
                   {formatPercent(summary.savingsRate)}
                 </span>
               </p>
               <p className="text-neutral-500 dark:text-neutral-400">
-                Budget used{" "}
+                {t("dashboard.budgetUsed")}{" "}
                 <span className="font-bold text-neutral-950 dark:text-white">
-                  {budget.limit > 0 ? formatPercent(budget.usage) : "n/a"}
+                  {budget.limit > 0 ? formatPercent(budget.usage) : "-"}
                 </span>
               </p>
               <p className="text-neutral-500 dark:text-neutral-400">
-                Goal{" "}
+                {t("dashboard.goal")}{" "}
                 <span className="font-bold text-neutral-950 dark:text-white">
                   {formatPercent(savingsProgress)}
                 </span>
@@ -142,18 +149,18 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        <Card title="Career readiness" description={data.career.targetRole}>
+        <Card title={t("dashboard.careerReadiness")} description={data.career.targetRole}>
           <div className="flex items-center gap-5">
             <ScoreRing value={readinessScore} tone="indigo" label="/ 100" />
             <div className="space-y-2 text-sm">
               <p className="text-neutral-500 dark:text-neutral-400">
-                Progress{" "}
+                {t("dashboard.progress")}{" "}
                 <span className="font-bold text-neutral-950 dark:text-white">
                   {data.career.progressScore}%
                 </span>
               </p>
               <p className="text-neutral-500 dark:text-neutral-400">
-                Active applications{" "}
+                {t("dashboard.activeApplications")}{" "}
                 <span className="font-bold text-neutral-950 dark:text-white">
                   {
                     data.career.applications.filter((job) =>
@@ -163,7 +170,7 @@ export default function DashboardPage() {
                 </span>
               </p>
               <p className="text-neutral-500 dark:text-neutral-400">
-                Skills tracked{" "}
+                {t("dashboard.skillsTracked")}{" "}
                 <span className="font-bold text-neutral-950 dark:text-white">
                   {(data.career.skillProgress ?? []).length}
                 </span>
@@ -172,7 +179,7 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        <Card title="Weekly AI insight" description="Generated from your demo data.">
+        <Card title={t("dashboard.weeklyInsight")} description={t("dashboard.weeklyInsightDesc")}>
           <div className="flex h-full flex-col">
             <div className="flex items-start gap-3">
               <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-300">
@@ -181,15 +188,15 @@ export default function DashboardPage() {
               <p className="text-sm leading-6 text-neutral-600 dark:text-neutral-300">{weeklyInsight}</p>
             </div>
             <Link to="/app/advisor" className="mt-4 text-sm font-bold text-emerald-600 dark:text-emerald-300">
-              Open AI advisor &rarr;
+              {t("dashboard.openAdvisor")} &rarr;
             </Link>
           </div>
         </Card>
       </div>
 
-      <Card className="mt-6" title="Quick actions" description="Jump straight into a common task.">
+      <Card className="mt-6" title={t("dashboard.quickActions")} description={t("dashboard.quickActionsDesc")}>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {quickActions.map(({ to, label, icon: Icon, tone }) => (
+          {quickActions.map(({ to, labelKey, icon: Icon, tone }) => (
             <Link
               key={to}
               to={to}
@@ -198,14 +205,14 @@ export default function DashboardPage() {
               <span className={`grid h-9 w-9 place-items-center rounded-lg ${actionTones[tone]}`}>
                 <Icon size={18} />
               </span>
-              {label}
+              {t(labelKey)}
             </Link>
           ))}
         </div>
       </Card>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
-        <Card title="Income and expenses" description="Six-month view of cash movement.">
+        <Card title={t("dashboard.incomeExpenses")} description={t("dashboard.incomeExpensesDesc")}>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={monthlySeries}>
@@ -220,9 +227,9 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        <Card title="Savings goal" description={data.savingsGoal.name}>
+        <Card title={t("dashboard.savingsGoal")} description={data.savingsGoal.name}>
           <ProgressBar
-            label="Emergency fund"
+            label={data.savingsGoal.name}
             value={savingsProgress}
             detail={`${formatCurrency(data.savingsGoal.current, currency)} of ${formatCurrency(
               data.savingsGoal.target,
@@ -233,7 +240,7 @@ export default function DashboardPage() {
             <div className="flex items-center gap-3">
               <BriefcaseBusiness size={24} />
               <div>
-                <p className="text-sm opacity-70">Career score</p>
+                <p className="text-sm opacity-70">{t("dashboard.careerScore")}</p>
                 <p className="text-4xl font-bold">{data.career.progressScore}%</p>
               </div>
             </div>
@@ -243,63 +250,69 @@ export default function DashboardPage() {
 
       <Card
         className="mt-6"
-        title="Recent activity"
-        description="Latest transactions and application updates."
+        title={t("dashboard.recentActivity")}
+        description={t("dashboard.recentActivityDesc")}
         action={
           <Link to="/app/finance" className="text-sm font-bold text-emerald-600 dark:text-emerald-300">
-            View all
+            {t("dashboard.viewAll")}
           </Link>
         }
       >
         <div className="space-y-3">
-          {activity.map((event) => (
-            <div
-              key={event.id}
-              className="flex items-center justify-between gap-3 rounded-xl border border-neutral-200 bg-white px-4 py-3 dark:border-white/10 dark:bg-neutral-950"
-            >
-              <div className="flex min-w-0 items-center gap-3">
-                <span
-                  className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${
-                    event.kind === "application"
-                      ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-300"
-                      : event.type === "income"
-                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-300"
-                        : "bg-rose-500/10 text-rose-600 dark:text-rose-300"
-                  }`}
-                >
-                  {event.kind === "application" ? (
-                    <BriefcaseBusiness size={18} />
-                  ) : event.type === "income" ? (
-                    <ArrowUpRight size={18} />
-                  ) : (
-                    <ArrowDownRight size={18} />
-                  )}
-                </span>
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-bold text-neutral-950 dark:text-white">
-                    {event.title}
-                  </p>
-                  <p className="truncate text-xs text-neutral-500 dark:text-neutral-400">
-                    {event.detail} - {event.date}
-                  </p>
+          {activity.map((event) => {
+            const title =
+              event.kind === "transaction"
+                ? t(event.type === "income" ? "finance.income" : "finance.expense")
+                : event.title;
+            return (
+              <div
+                key={event.id}
+                className="flex items-center justify-between gap-3 rounded-xl border border-neutral-200 bg-white px-4 py-3 dark:border-white/10 dark:bg-neutral-950"
+              >
+                <div className="flex min-w-0 items-center gap-3">
+                  <span
+                    className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${
+                      event.kind === "application"
+                        ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-300"
+                        : event.type === "income"
+                          ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-300"
+                          : "bg-rose-500/10 text-rose-600 dark:text-rose-300"
+                    }`}
+                  >
+                    {event.kind === "application" ? (
+                      <BriefcaseBusiness size={18} />
+                    ) : event.type === "income" ? (
+                      <ArrowUpRight size={18} />
+                    ) : (
+                      <ArrowDownRight size={18} />
+                    )}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-bold text-neutral-950 dark:text-white">
+                      {title}
+                    </p>
+                    <p className="truncate text-xs text-neutral-500 dark:text-neutral-400">
+                      {event.detail} - {event.date}
+                    </p>
+                  </div>
                 </div>
+                {event.kind === "transaction" ? (
+                  <p
+                    className={`shrink-0 text-sm font-bold ${
+                      event.type === "income"
+                        ? "text-emerald-600 dark:text-emerald-300"
+                        : "text-neutral-900 dark:text-white"
+                    }`}
+                  >
+                    {event.type === "income" ? "+" : "-"}
+                    {formatCurrency(event.amount, currency)}
+                  </p>
+                ) : (
+                  <Badge tone={statusTone(event.status)}>{event.status}</Badge>
+                )}
               </div>
-              {event.kind === "transaction" ? (
-                <p
-                  className={`shrink-0 text-sm font-bold ${
-                    event.type === "income"
-                      ? "text-emerald-600 dark:text-emerald-300"
-                      : "text-neutral-900 dark:text-white"
-                  }`}
-                >
-                  {event.type === "income" ? "+" : "-"}
-                  {formatCurrency(event.amount, currency)}
-                </p>
-              ) : (
-                <Badge tone={statusTone(event.status)}>{event.status}</Badge>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
       </Card>
     </div>

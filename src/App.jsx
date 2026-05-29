@@ -3,6 +3,7 @@ import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { DashboardLayout } from "./layouts/DashboardLayout";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
 import { DemoDataProvider } from "./hooks/useDemoData";
+import { I18nProvider } from "./hooks/useI18n";
 import { ThemeProvider } from "./hooks/useTheme";
 
 const AIAdvisorPage = lazy(() => import("./pages/AIAdvisorPage"));
@@ -83,11 +84,13 @@ function AppRoutes() {
 export default function App() {
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <DemoDataProvider>
-          <AppRoutes />
-        </DemoDataProvider>
-      </AuthProvider>
+      <I18nProvider>
+        <AuthProvider>
+          <DemoDataProvider>
+            <AppRoutes />
+          </DemoDataProvider>
+        </AuthProvider>
+      </I18nProvider>
     </ThemeProvider>
   );
 }

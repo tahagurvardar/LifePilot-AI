@@ -2,21 +2,23 @@ import { Bell, Menu, Search } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { ThemeToggle } from "./ThemeToggle";
 import { useAuth } from "../hooks/useAuth";
+import { useI18n } from "../hooks/useI18n";
 import { getInitials } from "../utils/user";
 
-const titles = {
-  "/app": "Dashboard",
-  "/app/finance": "Finance",
-  "/app/career": "Career",
-  "/app/resume": "Resume Analyzer",
-  "/app/advisor": "AI Advisor",
-  "/app/settings": "Settings"
+const titleKeys = {
+  "/app": "nav.dashboard",
+  "/app/finance": "nav.finance",
+  "/app/career": "nav.career",
+  "/app/resume": "nav.resume",
+  "/app/advisor": "nav.advisor",
+  "/app/settings": "nav.settings"
 };
 
 export function TopNavbar({ onMenuClick }) {
   const location = useLocation();
   const { currentUser } = useAuth();
-  const title = titles[location.pathname] ?? "LifePilot AI";
+  const { t } = useI18n();
+  const title = titleKeys[location.pathname] ? t(titleKeys[location.pathname]) : t("common.appName");
   const initials = getInitials(currentUser?.name);
 
   return (
@@ -33,14 +35,14 @@ export function TopNavbar({ onMenuClick }) {
 
         <div className="min-w-0 flex-1">
           <p className="text-xs font-semibold uppercase text-neutral-500 dark:text-neutral-400">
-            Workspace
+            {t("nav.workspace")}
           </p>
           <h2 className="truncate text-lg font-bold text-neutral-950 dark:text-white">{title}</h2>
         </div>
 
         <div className="hidden min-w-72 items-center gap-2 rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-500 dark:border-white/10 dark:bg-neutral-900 dark:text-neutral-400 md:flex">
           <Search size={17} />
-          <span>Search plans, jobs, transactions</span>
+          <span>{t("nav.search")}</span>
         </div>
 
         <ThemeToggle compact />

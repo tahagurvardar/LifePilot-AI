@@ -2,10 +2,12 @@ import { Moon, RotateCcw, Save, Sun, UserRound } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "../components/Button";
 import { Card } from "../components/Card";
+import { ExportReportButton } from "../components/ExportReportButton";
 import { PageHeader } from "../components/PageHeader";
-import { countries, currencies, languages } from "../data/demoData";
+import { countries, currencies } from "../data/demoData";
 import { useAuth } from "../hooks/useAuth";
 import { useDemoData } from "../hooks/useDemoData";
+import { useI18n } from "../hooks/useI18n";
 import { useTheme } from "../hooks/useTheme";
 import { getInitials } from "../utils/user";
 
@@ -13,8 +15,15 @@ export default function SettingsPage() {
   const { currentUser, updateUser } = useAuth();
   const { data, updatePreferences, updateProfile, resetDemoData } = useDemoData();
   const { theme, setTheme } = useTheme();
+  const { t, lang, setLang, languages } = useI18n();
   const [profileForm, setProfileForm] = useState(data.profile);
   const [saved, setSaved] = useState(false);
+
+  function handleLanguageChange(code) {
+    setLang(code);
+    // Keep the demo data's language field in sync for completeness.
+    updatePreferences({ language: code === "tr" ? "Turkish" : "English" });
+  }
 
   useEffect(() => {
     setProfileForm(data.profile);
@@ -38,7 +47,7 @@ export default function SettingsPage() {
   }
 
   function handleReset() {
-    if (window.confirm("Reset all demo data back to the default Jordan Blake profile?")) {
+    if (window.confirm(t("settings.resetConfirm"))) {
       resetDemoData();
       setSaved(false);
     }
@@ -46,33 +55,30 @@ export default function SettingsPage() {
 
   return (
     <div>
-      <PageHeader
-        title="Settings"
-        description="Edit your demo profile, currency, country, language, and theme preferences."
-      />
+      <PageHeader title={t("settings.title")} description={t("settings.desc")} />
 
       <div className="grid gap-6 xl:grid-cols-[1fr_0.7fr]">
-        <Card title="Profile" description={currentUser?.email}>
+        <Card title={t("settings.profile")} description={currentUser?.email}>
           <div className="mb-6 flex items-center gap-4">
             <div className="grid h-16 w-16 place-items-center rounded-2xl bg-gradient-to-br from-emerald-400 to-indigo-500 text-xl font-bold text-white">
               {getInitials(profileForm.name) || <UserRound size={26} />}
             </div>
             <div>
               <p className="text-sm font-bold text-neutral-950 dark:text-white">
-                {profileForm.name || "Your name"}
+                {profileForm.name || t("settings.fullName")}
               </p>
               <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                {profileForm.role || "Your role"}
+                {profileForm.role || t("settings.role")}
               </p>
               <p className="mt-1 text-xs text-neutral-400 dark:text-neutral-500">
-                Photo placeholder uses your initials.
+                {t("settings.photoHint")}
               </p>
             </div>
           </div>
 
           <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
             <label className="text-sm font-bold text-neutral-700 dark:text-neutral-200">
-              Full name
+              {t("settings.fullName")}
               <input
                 value={profileForm.name}
                 onChange={(event) => updateField("name", event.target.value)}
@@ -82,7 +88,7 @@ export default function SettingsPage() {
               />
             </label>
             <label className="text-sm font-bold text-neutral-700 dark:text-neutral-200">
-              Email
+              {t("settings.email")}
               <input
                 value={profileForm.email}
                 onChange={(event) => updateField("email", event.target.value)}
@@ -92,7 +98,7 @@ export default function SettingsPage() {
               />
             </label>
             <label className="text-sm font-bold text-neutral-700 dark:text-neutral-200">
-              Role
+              {t("settings.role")}
               <input
                 value={profileForm.role}
                 onChange={(event) => updateField("role", event.target.value)}
@@ -101,7 +107,7 @@ export default function SettingsPage() {
               />
             </label>
             <label className="text-sm font-bold text-neutral-700 dark:text-neutral-200">
-              Target role
+              {t("settings.targetRole")}
               <input
                 value={profileForm.targetRole}
                 onChange={(event) => updateField("targetRole", event.target.value)}
@@ -110,7 +116,7 @@ export default function SettingsPage() {
               />
             </label>
             <label className="text-sm font-bold text-neutral-700 dark:text-neutral-200">
-              Country
+              {t("settings.country")}
               <select
                 value={profileForm.country}
                 onChange={(event) => updateField("country", event.target.value)}
@@ -124,7 +130,7 @@ export default function SettingsPage() {
               </select>
             </label>
             <label className="text-sm font-bold text-neutral-700 dark:text-neutral-200">
-              Currency
+              {t("settings.currency")}
               <select
                 value={data.preferences.currency}
                 onChange={(event) => updatePreferences({ currency: event.target.value })}
@@ -140,11 +146,11 @@ export default function SettingsPage() {
             <div className="flex flex-col gap-3 md:col-span-2 sm:flex-row sm:items-center">
               <Button type="submit">
                 <Save size={18} />
-                Save profile
+                {t("settings.saveProfile")}
               </Button>
               {saved && (
                 <p className="text-sm font-bold text-emerald-600 dark:text-emerald-300">
-                  Settings saved locally.
+                  {t("settings.savedLocally")}
                 </p>
               )}
             </div>
@@ -152,12 +158,12 @@ export default function SettingsPage() {
         </Card>
 
         <div className="space-y-6">
-          <Card title="Appearance">
-            <p className="text-sm font-bold text-neutral-700 dark:text-neutral-200">Theme</p>
+          <Card title={t("settings.appearance")}>
+            <p className="text-sm font-bold text-neutral-700 dark:text-neutral-200">{t("settings.theme")}</p>
             <div className="mt-3 grid grid-cols-2 gap-2">
               {[
-                { value: "light", label: "Light", icon: Sun },
-                { value: "dark", label: "Dark", icon: Moon }
+                { value: "light", label: t("settings.light"), icon: Sun },
+                { value: "dark", label: t("settings.dark"), icon: Moon }
               ].map(({ value, label, icon: Icon }) => (
                 <button
                   key={value}
@@ -176,31 +182,37 @@ export default function SettingsPage() {
             </div>
           </Card>
 
-          <Card title="Preferences">
+          <Card title={t("settings.preferences")}>
             <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-200">
-              Language
+              {t("settings.language")}
               <select
-                value={data.preferences.language}
-                onChange={(event) => updatePreferences({ language: event.target.value })}
+                value={lang}
+                onChange={(event) => handleLanguageChange(event.target.value)}
                 className="field mt-2"
               >
                 {languages.map((language) => (
-                  <option key={language} value={language}>
-                    {language}
+                  <option key={language.code} value={language.code}>
+                    {language.label}
                   </option>
                 ))}
               </select>
             </label>
           </Card>
 
-          <Card title="Demo data">
+          <Card title={t("settings.report")}>
             <p className="text-sm leading-6 text-neutral-500 dark:text-neutral-400">
-              Login, profile, transactions, career progress, and advisor messages are stored with
-              LocalStorage so the frontend can run without a backend.
+              {t("settings.reportDesc")}
+            </p>
+            <ExportReportButton className="mt-4" />
+          </Card>
+
+          <Card title={t("settings.demoData")}>
+            <p className="text-sm leading-6 text-neutral-500 dark:text-neutral-400">
+              {t("settings.demoDataDesc")}
             </p>
             <Button variant="danger" size="sm" className="mt-4" onClick={handleReset}>
               <RotateCcw size={16} />
-              Reset demo data
+              {t("settings.resetDemoData")}
             </Button>
           </Card>
         </div>

@@ -2,17 +2,19 @@ import { ArrowDownRight, ArrowUpRight, Pencil, ReceiptText, Trash2 } from "lucid
 import { useState } from "react";
 import { EmptyState } from "./EmptyState";
 import { TransactionForm } from "./TransactionForm";
+import { useI18n } from "../hooks/useI18n";
 import { formatCurrency } from "../utils/finance";
 
 export function TransactionList({ transactions, currency, onRemove, onUpdate, emptyMessage }) {
+  const { t } = useI18n();
   const [editingId, setEditingId] = useState(null);
 
   if (!transactions.length) {
     return (
       <EmptyState
         icon={ReceiptText}
-        title="No transactions yet"
-        description={emptyMessage ?? "Add your first income or expense to see it listed here."}
+        title={t("finance.noTransactions")}
+        description={emptyMessage ?? t("finance.emptyAll")}
       />
     );
   }
@@ -87,7 +89,7 @@ export function TransactionList({ transactions, currency, onRemove, onUpdate, em
                   <button
                     type="button"
                     onClick={() => setEditingId(transaction.id)}
-                    aria-label="Edit transaction"
+                    aria-label={t("common.edit")}
                     className="focus-ring rounded-lg p-2 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700 dark:hover:bg-white/10 dark:hover:text-white"
                   >
                     <Pencil size={16} />
@@ -96,7 +98,7 @@ export function TransactionList({ transactions, currency, onRemove, onUpdate, em
                 <button
                   type="button"
                   onClick={() => onRemove(transaction.id)}
-                  aria-label="Remove transaction"
+                  aria-label={t("common.delete")}
                   className="focus-ring rounded-lg p-2 text-neutral-400 transition hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/10 dark:hover:text-rose-300"
                 >
                   <Trash2 size={16} />

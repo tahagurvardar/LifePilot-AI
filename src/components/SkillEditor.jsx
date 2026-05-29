@@ -1,7 +1,9 @@
 import { Plus, X } from "lucide-react";
 import { useState } from "react";
+import { useI18n } from "../hooks/useI18n";
 
 export function SkillEditor({ title, skills, tone = "emerald", onAdd, onRemove }) {
+  const { t } = useI18n();
   const [value, setValue] = useState("");
   const chipClass =
     tone === "amber"
@@ -40,7 +42,7 @@ export function SkillEditor({ title, skills, tone = "emerald", onAdd, onRemove }
           value={value}
           onChange={(event) => setValue(event.target.value)}
           className="field"
-          placeholder="Add skill"
+          placeholder={t("career.addSkill")}
           type="text"
         />
         <button

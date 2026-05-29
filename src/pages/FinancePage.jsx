@@ -30,6 +30,7 @@ import { TransactionForm } from "../components/TransactionForm";
 import { TransactionList } from "../components/TransactionList";
 import { transactionCategories } from "../data/demoData";
 import { useDemoData } from "../hooks/useDemoData";
+import { useI18n } from "../hooks/useI18n";
 import {
   buildCategorySeries,
   buildMonthlySeries,
@@ -50,6 +51,7 @@ export default function FinancePage() {
     updateBudget,
     updateSavingsGoal
   } = useDemoData();
+  const { t } = useI18n();
   const [categoryFilter, setCategoryFilter] = useState("All");
   const currency = data.preferences.currency;
   const summary = calculateFinanceSummary(data);
@@ -64,63 +66,60 @@ export default function FinancePage() {
 
   return (
     <div>
-      <PageHeader
-        title="Finance"
-        description="Track income, expenses, budget, savings rate, transactions, categories, and goal progress."
-      />
+      <PageHeader title={t("finance.title")} description={t("finance.desc")} />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
-          title="Total Balance"
+          title={t("dashboard.totalBalance")}
           value={formatCurrency(summary.totalBalance, currency)}
-          detail="Available demo balance"
+          detail={t("dashboard.totalBalanceDetail")}
           icon={WalletCards}
           color="emerald"
         />
         <StatCard
-          title="Monthly Income"
+          title={t("dashboard.monthlyIncome")}
           value={formatCurrency(summary.monthlyIncome, currency)}
-          detail="Income in latest active month"
+          detail={t("dashboard.monthlyIncomeDetail")}
           icon={TrendingUp}
           color="indigo"
         />
         <StatCard
-          title="Monthly Expenses"
+          title={t("dashboard.monthlyExpenses")}
           value={formatCurrency(summary.monthlyExpenses, currency)}
-          detail="Expenses in latest active month"
+          detail={t("dashboard.expensesDriftDetail")}
           icon={ReceiptText}
           color="rose"
         />
         <StatCard
-          title="Savings Rate"
+          title={t("dashboard.savingsRate")}
           value={formatPercent(summary.savingsRate)}
-          detail="Monthly surplus efficiency"
+          detail={t("dashboard.savingsRateDetail")}
           icon={PiggyBank}
           color="amber"
         />
       </div>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[1fr_0.9fr]">
-        <Card title="Add transaction" description="Create income or expense records for the demo.">
+        <Card title={t("finance.addTransaction")} description={t("finance.addTransactionDesc")}>
           <TransactionForm onSubmit={addTransaction} />
         </Card>
 
         <Card
-          title="Monthly budget"
-          description="Set a spending limit and watch usage update live."
-          action={budget.overBudget ? <Badge tone="rose"><AlertTriangle size={13} />Over budget</Badge> : null}
+          title={t("finance.monthlyBudget")}
+          description={t("finance.monthlyBudgetDesc")}
+          action={budget.overBudget ? <Badge tone="rose"><AlertTriangle size={13} />{t("finance.overBudget")}</Badge> : null}
         >
           <ProgressBar
-            label="Budget used"
+            label={t("finance.budgetUsed")}
             value={budget.usage}
             color={budget.overBudget ? "amber" : "emerald"}
-            detail={`${formatCurrency(budget.spent, currency)} spent of ${formatCurrency(
-              budget.limit,
-              currency
-            )} this month`}
+            detail={t("finance.spentOf", {
+              spent: formatCurrency(budget.spent, currency),
+              limit: formatCurrency(budget.limit, currency)
+            })}
           />
           <label className="mt-5 block text-sm font-bold text-neutral-700 dark:text-neutral-200">
-            Monthly limit
+            {t("finance.monthlyLimit")}
             <input
               value={data.budget.monthlyLimit}
               onChange={(event) =>
@@ -133,14 +132,16 @@ export default function FinancePage() {
           </label>
           <p className="mt-3 text-sm text-neutral-500 dark:text-neutral-400">
             {budget.overBudget
-              ? `You are ${formatCurrency(budget.spent - budget.limit, currency)} over the limit.`
-              : `${formatCurrency(budget.remaining, currency)} left for this month.`}
+              ? t("finance.overByAmount", {
+                  amount: formatCurrency(budget.spent - budget.limit, currency)
+                })
+              : t("finance.leftThisMonth", { amount: formatCurrency(budget.remaining, currency) })}
           </p>
         </Card>
       </div>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
-        <Card title="Income and expense charts" description="Compare monthly movement with Recharts.">
+        <Card title={t("finance.charts")} description={t("finance.chartsDesc")}>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={monthlySeries}>
@@ -155,12 +156,12 @@ export default function FinancePage() {
           </div>
         </Card>
 
-        <Card title="Expense categories" description="Top spending areas.">
+        <Card title={t("finance.categories")} description={t("finance.categoriesDesc")}>
           {categorySeries.length === 0 ? (
             <EmptyState
               icon={PieChartIcon}
-              title="No expenses to break down"
-              description="Add an expense transaction to see your category breakdown chart."
+              title={t("finance.noExpenses")}
+              description={t("finance.noExpensesDesc")}
             />
           ) : (
             <>
@@ -205,31 +206,32 @@ export default function FinancePage() {
         </Card>
       </div>
 
-      <Card className="mt-6" title="Savings goal" description={data.savingsGoal.name}>
+      <Card className="mt-6" title={t("finance.savingsGoal")} description={data.savingsGoal.name}>
         <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
           <div>
             <ProgressBar
               label={data.savingsGoal.name}
               value={savingsProgress}
-              detail={`${formatCurrency(data.savingsGoal.current, currency)} saved of ${formatCurrency(
-                data.savingsGoal.target,
-                currency
-              )}`}
+              detail={t("finance.savedOf", {
+                current: formatCurrency(data.savingsGoal.current, currency),
+                target: formatCurrency(data.savingsGoal.target, currency)
+              })}
             />
             <div className="mt-5 flex items-center gap-3 rounded-xl bg-neutral-50 p-4 dark:bg-neutral-900">
               <Target size={20} className="text-emerald-600 dark:text-emerald-300" />
               <p className="text-sm text-neutral-600 dark:text-neutral-300">
-                {formatCurrency(
-                  Math.max(data.savingsGoal.target - data.savingsGoal.current, 0),
-                  currency
-                )}{" "}
-                left to reach your goal.
+                {t("finance.leftToReach", {
+                  amount: formatCurrency(
+                    Math.max(data.savingsGoal.target - data.savingsGoal.current, 0),
+                    currency
+                  )
+                })}
               </p>
             </div>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="text-sm font-bold text-neutral-700 dark:text-neutral-200">
-              Current saved
+              {t("finance.currentSaved")}
               <input
                 value={data.savingsGoal.current}
                 onChange={(event) =>
@@ -241,7 +243,7 @@ export default function FinancePage() {
               />
             </label>
             <label className="text-sm font-bold text-neutral-700 dark:text-neutral-200">
-              Target
+              {t("finance.target")}
               <input
                 value={data.savingsGoal.target}
                 onChange={(event) =>
@@ -258,16 +260,16 @@ export default function FinancePage() {
 
       <Card
         className="mt-6"
-        title="Transaction list"
-        description="Filter, edit, and remove demo transactions."
+        title={t("finance.transactionList")}
+        description={t("finance.transactionListDesc")}
         action={
           <select
             value={categoryFilter}
             onChange={(event) => setCategoryFilter(event.target.value)}
             className="field min-w-40"
-            aria-label="Filter by category"
+            aria-label={t("finance.filterByCategory")}
           >
-            <option value="All">All categories</option>
+            <option value="All">{t("finance.allCategories")}</option>
             {transactionCategories.map((category) => (
               <option key={category} value={category}>
                 {category}
@@ -283,8 +285,8 @@ export default function FinancePage() {
           onUpdate={updateTransaction}
           emptyMessage={
             categoryFilter === "All"
-              ? "Add your first income or expense to see it listed here."
-              : `No transactions in "${categoryFilter}". Try a different category.`
+              ? t("finance.emptyAll")
+              : t("finance.emptyFiltered", { category: categoryFilter })
           }
         />
       </Card>

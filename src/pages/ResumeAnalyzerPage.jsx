@@ -13,6 +13,16 @@ import { PageHeader } from "../components/PageHeader";
 import { ProgressBar } from "../components/ProgressBar";
 import { ScoreRing } from "../components/ScoreRing";
 import { useDemoData } from "../hooks/useDemoData";
+import { useI18n } from "../hooks/useI18n";
+import { useLocalStorage } from "../hooks/useLocalStorage";
+import { RESUME_ANALYSIS_KEY } from "../utils/report";
+
+const SECTION_TITLE_KEYS = {
+  summary: "resume.sectionSummary",
+  skills: "resume.sectionSkills",
+  experience: "resume.sectionExperience",
+  projects: "resume.sectionProjects"
+};
 
 const TARGET_KEYWORDS = [
   "metrics",
@@ -140,10 +150,12 @@ function scoreTone(score) {
 
 export default function ResumeAnalyzerPage() {
   const { data } = useDemoData();
+  const { t } = useI18n();
   const [resumeText, setResumeText] = useState(
     "Product Manager with experience launching customer onboarding improvements, running discovery interviews, and coordinating roadmap delivery across design and engineering."
   );
-  const [result, setResult] = useState(null);
+  // Persisted so the PDF report can include the latest resume score/feedback.
+  const [result, setResult] = useLocalStorage(RESUME_ANALYSIS_KEY, null);
   const [analyzing, setAnalyzing] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -152,7 +164,7 @@ export default function ResumeAnalyzerPage() {
     setCopied(false);
     // Small delay so the mock analysis shows a loading state.
     window.setTimeout(() => {
-      setResult(analyze(resumeText, data.career.targetRole));
+      setResult({ ...analyze(resumeText, data.career.targetRole), analyzedAt: new Date().toISOString() });
       setAnalyzing(false);
     }, 600);
   }
@@ -191,23 +203,22 @@ export default function ResumeAnalyzerPage() {
 
   return (
     <div>
-      <PageHeader
-        title="Resume Analyzer"
-        description="Paste resume text and generate a score plus structured mock AI feedback for your target role."
-      />
+      <PageHeader title={t("resume.title")} description={t("resume.desc")} />
 
-      <Card title="Resume text" description={`Target role: ${data.career.targetRole}`}>
+      <Card title={t("resume.resumeText")} description={t("resume.targetRolePrefix", { role: data.career.targetRole })}>
         <textarea
           value={resumeText}
           onChange={(event) => setResumeText(event.target.value)}
           className="field min-h-72 resize-y leading-7"
-          placeholder="Paste your resume text here"
+          placeholder={t("resume.placeholder")}
         />
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">{wordCount} words</p>
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">
+            {wordCount} {t("common.words")}
+          </p>
           <Button onClick={analyzeResume} disabled={!resumeText.trim() || analyzing}>
             {analyzing ? <Loader2 size={18} className="animate-spin" /> : <FileSearch size={18} />}
-            {analyzing ? "Analyzing..." : "Analyze resume"}
+            {analyzing ? t("resume.analyzing") : t("resume.analyze")}
           </Button>
         </div>
       </Card>
@@ -215,24 +226,28 @@ export default function ResumeAnalyzerPage() {
       {result && !analyzing && (
         <>
           <div className="mt-6 grid gap-6 lg:grid-cols-[0.7fr_1.3fr]">
-            <Card title="Resume score" description="Overall, out of 100.">
+            <Card title={t("resume.score")} description={t("resume.scoreDesc")}>
               <div className="flex flex-col items-center gap-4">
                 <ScoreRing value={result.overall} tone={scoreTone(result.overall)} size={148} label="/ 100" />
                 <p className="text-center text-sm text-neutral-500 dark:text-neutral-400">
                   {result.overall >= 75
-                    ? "Strong resume. Polish the lowest section to stand out."
+                    ? t("resume.scoreStrong")
                     : result.overall >= 55
-                      ? "Solid base. A few targeted edits will lift this quickly."
-                      : "Early draft. Focus on metrics and keywords next."}
+                      ? t("resume.scoreSolid")
+                      : t("resume.scoreEarly")}
                 </p>
               </div>
             </Card>
 
-            <Card title="Section breakdown" description="Summary, skills, experience, and projects.">
+            <Card title={t("resume.breakdown")} description={t("resume.breakdownDesc")}>
               <div className="space-y-5">
                 {result.sections.map((section) => (
                   <div key={section.key}>
-                    <ProgressBar label={section.title} value={section.score} color={scoreTone(section.score)} />
+                    <ProgressBar
+                      label={SECTION_TITLE_KEYS[section.key] ? t(SECTION_TITLE_KEYS[section.key]) : section.title}
+                      value={section.score}
+                      color={scoreTone(section.score)}
+                    />
                     <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">{section.note}</p>
                   </div>
                 ))}
@@ -241,11 +256,9 @@ export default function ResumeAnalyzerPage() {
           </div>
 
           <div className="mt-6 grid gap-6 lg:grid-cols-2">
-            <Card title="Missing keywords" description="Terms that strengthen alignment with the target role.">
+            <Card title={t("resume.missingKeywords")} description={t("resume.missingKeywordsDesc")}>
               {result.missingKeywords.length === 0 ? (
-                <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                  Nice — your resume already covers the key terms we check for.
-                </p>
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">{t("resume.noMissing")}</p>
               ) : (
                 <div className="flex flex-wrap gap-2">
                   {result.missingKeywords.map((keyword) => (
@@ -257,7 +270,9 @@ export default function ResumeAnalyzerPage() {
               )}
               {result.matchedKeywords.length > 0 && (
                 <>
-                  <p className="mt-5 text-sm font-bold text-neutral-700 dark:text-neutral-200">Already included</p>
+                  <p className="mt-5 text-sm font-bold text-neutral-700 dark:text-neutral-200">
+                    {t("resume.alreadyIncluded")}
+                  </p>
                   <div className="mt-2 flex flex-wrap gap-2">
                     {result.matchedKeywords.map((keyword) => (
                       <Badge key={keyword} tone="emerald">
@@ -270,12 +285,12 @@ export default function ResumeAnalyzerPage() {
             </Card>
 
             <Card
-              title="Improved summary"
-              description="A polished, copyable rewrite you can adapt."
+              title={t("resume.improvedSummary")}
+              description={t("resume.improvedSummaryDesc")}
               action={
                 <Button variant="secondary" size="sm" onClick={copySummary}>
                   {copied ? <Check size={16} /> : <Copy size={16} />}
-                  {copied ? "Copied" : "Copy"}
+                  {copied ? t("common.copied") : t("common.copy")}
                 </Button>
               }
             >
@@ -285,9 +300,7 @@ export default function ResumeAnalyzerPage() {
                   {result.improvedSummary}
                 </p>
               </div>
-              <p className="mt-3 text-xs text-neutral-400 dark:text-neutral-500">
-                Demo AI-style suggestion. Review and personalize before using.
-              </p>
+              <p className="mt-3 text-xs text-neutral-400 dark:text-neutral-500">{t("resume.demoSuggestion")}</p>
             </Card>
           </div>
         </>

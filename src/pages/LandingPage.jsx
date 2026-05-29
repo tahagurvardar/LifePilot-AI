@@ -28,6 +28,7 @@ import { Badge } from "../components/Badge";
 import { Button } from "../components/Button";
 import { Footer } from "../components/Footer";
 import { ThemeToggle } from "../components/ThemeToggle";
+import { useI18n } from "../hooks/useI18n";
 
 const previewData = [
   { month: "Jan", income: 4300, expense: 2400 },
@@ -38,53 +39,17 @@ const previewData = [
 ];
 
 const featureSections = [
-  {
-    icon: WalletCards,
-    title: "Finance clarity",
-    copy: "Track balance, income, expenses, budgets, category trends, and savings goals in one calm dashboard."
-  },
-  {
-    icon: BriefcaseBusiness,
-    title: "Career momentum",
-    copy: "Plan target roles, watch skill progress, follow a roadmap, and keep every job application moving."
-  },
-  {
-    icon: FileText,
-    title: "Resume feedback",
-    copy: "Paste resume text and get a score plus structured mock feedback for strengths, gaps, and next edits."
-  },
-  {
-    icon: BrainCircuit,
-    title: "AI advisor",
-    copy: "Ask practical questions and receive smart demo guidance based on your finance and career context."
-  }
+  { icon: WalletCards, titleKey: "landing.f1Title", copyKey: "landing.f1Copy" },
+  { icon: BriefcaseBusiness, titleKey: "landing.f2Title", copyKey: "landing.f2Copy" },
+  { icon: FileText, titleKey: "landing.f3Title", copyKey: "landing.f3Copy" },
+  { icon: BrainCircuit, titleKey: "landing.f4Title", copyKey: "landing.f4Copy" }
 ];
 
 const howItWorks = [
-  {
-    icon: Sparkles,
-    step: "01",
-    title: "Sign in to the demo",
-    copy: "Use the one-click demo account. Everything runs in your browser with no signup friction."
-  },
-  {
-    icon: ListChecks,
-    step: "02",
-    title: "Add your finances and goals",
-    copy: "Log transactions, set a monthly budget, and track a savings goal that updates your scores live."
-  },
-  {
-    icon: Target,
-    step: "03",
-    title: "Grow your career",
-    copy: "Map skills, follow a roadmap, manage applications, and analyze your resume against a target role."
-  },
-  {
-    icon: MessageSquareText,
-    step: "04",
-    title: "Ask the AI advisor",
-    copy: "Get finance, saving, career, and study suggestions generated from your own demo data."
-  }
+  { icon: Sparkles, step: "01", titleKey: "landing.s1Title", copyKey: "landing.s1Copy" },
+  { icon: ListChecks, step: "02", titleKey: "landing.s2Title", copyKey: "landing.s2Copy" },
+  { icon: Target, step: "03", titleKey: "landing.s3Title", copyKey: "landing.s3Copy" },
+  { icon: MessageSquareText, step: "04", titleKey: "landing.s4Title", copyKey: "landing.s4Copy" }
 ];
 
 const testimonials = [
@@ -247,6 +212,7 @@ function SectionHeading({ eyebrow, title, description }) {
 }
 
 export default function LandingPage() {
+  const { t } = useI18n();
   return (
     <div className="min-h-screen bg-mist text-neutral-950 dark:bg-neutral-950 dark:text-white">
       <section className="relative overflow-hidden">
@@ -263,11 +229,11 @@ export default function LandingPage() {
                 to="/login"
                 className="focus-ring hidden rounded-lg px-4 py-2 text-sm font-bold text-neutral-700 transition hover:bg-white dark:text-neutral-200 dark:hover:bg-white/10 sm:inline-flex"
               >
-                Sign in
+                {t("common.signIn")}
               </Link>
               <Link to="/register">
                 <Button size="sm">
-                  Get started
+                  {t("common.getStarted")}
                   <ArrowRight size={17} />
                 </Button>
               </Link>
@@ -278,37 +244,36 @@ export default function LandingPage() {
             <div className="max-w-4xl">
               <Badge tone="emerald" className="mb-5">
                 <Sparkles size={14} />
-                Portfolio demo - no backend required
+                {t("landing.badge")}
               </Badge>
               <h1 className="text-4xl font-bold tracking-normal text-neutral-950 dark:text-white sm:text-5xl md:text-6xl lg:text-7xl">
-                Plan money. Grow career. Move with clarity.
+                {t("landing.heroTitle")}
               </h1>
               <p className="mt-5 max-w-2xl text-lg leading-8 text-neutral-600 dark:text-neutral-300 sm:text-xl">
-                LifePilot AI is your copilot for financial focus and career momentum. Track spending,
-                build skills, manage applications, and turn everyday choices into a practical plan.
+                {t("landing.heroSubtitle")}
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Link to="/register">
                   <Button size="lg" className="w-full sm:w-auto">
-                    Get started
+                    {t("common.getStarted")}
                     <ArrowRight size={19} />
                   </Button>
                 </Link>
                 <Link to="/login">
                   <Button variant="secondary" size="lg" className="w-full sm:w-auto">
-                    View live demo
+                    {t("common.viewLiveDemo")}
                   </Button>
                 </Link>
               </div>
               <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm font-semibold text-neutral-500 dark:text-neutral-400">
                 <span className="flex items-center gap-2">
-                  <CheckCircle2 size={17} className="text-emerald-500" /> Free demo account
+                  <CheckCircle2 size={17} className="text-emerald-500" /> {t("landing.freeDemo")}
                 </span>
                 <span className="flex items-center gap-2">
-                  <CheckCircle2 size={17} className="text-emerald-500" /> Dark mode
+                  <CheckCircle2 size={17} className="text-emerald-500" /> {t("landing.darkMode")}
                 </span>
                 <span className="flex items-center gap-2">
-                  <CheckCircle2 size={17} className="text-emerald-500" /> Fully responsive
+                  <CheckCircle2 size={17} className="text-emerald-500" /> {t("landing.responsive")}
                 </span>
               </div>
             </div>
@@ -320,21 +285,21 @@ export default function LandingPage() {
       <section className="border-y border-neutral-200 bg-white py-16 dark:border-white/10 dark:bg-neutral-900 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeading
-            eyebrow="Features"
-            title="Everything in one focused workspace"
-            description="Four connected modules that keep your finances and your career growth in the same place."
+            eyebrow={t("landing.featuresEyebrow")}
+            title={t("landing.featuresTitle")}
+            description={t("landing.featuresDesc")}
           />
           <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {featureSections.map(({ icon: Icon, title, copy }) => (
+            {featureSections.map(({ icon: Icon, titleKey, copyKey }) => (
               <article
-                key={title}
+                key={titleKey}
                 className="rounded-2xl border border-neutral-200 p-6 transition hover:-translate-y-1 hover:shadow-premium dark:border-white/10 dark:hover:shadow-premium-dark"
               >
                 <div className="grid h-11 w-11 place-items-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-300">
                   <Icon size={22} />
                 </div>
-                <h3 className="mt-5 text-lg font-bold text-neutral-950 dark:text-white">{title}</h3>
-                <p className="mt-3 text-sm leading-6 text-neutral-500 dark:text-neutral-400">{copy}</p>
+                <h3 className="mt-5 text-lg font-bold text-neutral-950 dark:text-white">{t(titleKey)}</h3>
+                <p className="mt-3 text-sm leading-6 text-neutral-500 dark:text-neutral-400">{t(copyKey)}</p>
               </article>
             ))}
           </div>
@@ -344,12 +309,12 @@ export default function LandingPage() {
       <section className="bg-mist py-16 dark:bg-neutral-950 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeading
-            eyebrow="How it works"
-            title="From sign-in to a real plan in minutes"
-            description="A simple flow designed to show product thinking end to end."
+            eyebrow={t("landing.howEyebrow")}
+            title={t("landing.howTitle")}
+            description={t("landing.howDesc")}
           />
           <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-            {howItWorks.map(({ icon: Icon, step, title, copy }) => (
+            {howItWorks.map(({ icon: Icon, step, titleKey, copyKey }) => (
               <div
                 key={step}
                 className="surface relative rounded-2xl p-6"
@@ -358,8 +323,8 @@ export default function LandingPage() {
                 <div className="mt-3 grid h-11 w-11 place-items-center rounded-xl bg-neutral-950 text-white dark:bg-white dark:text-neutral-950">
                   <Icon size={20} />
                 </div>
-                <h3 className="mt-4 text-base font-bold text-neutral-950 dark:text-white">{title}</h3>
-                <p className="mt-2 text-sm leading-6 text-neutral-500 dark:text-neutral-400">{copy}</p>
+                <h3 className="mt-4 text-base font-bold text-neutral-950 dark:text-white">{t(titleKey)}</h3>
+                <p className="mt-2 text-sm leading-6 text-neutral-500 dark:text-neutral-400">{t(copyKey)}</p>
               </div>
             ))}
           </div>
@@ -369,9 +334,9 @@ export default function LandingPage() {
       <section className="border-y border-neutral-200 bg-white py-16 dark:border-white/10 dark:bg-neutral-900 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeading
-            eyebrow="User stories"
-            title="What demo users would say"
-            description="Illustrative testimonials from sample personas, shown to demonstrate the product story."
+            eyebrow={t("landing.storiesEyebrow")}
+            title={t("landing.storiesTitle")}
+            description={t("landing.storiesDesc")}
           />
           <div className="mt-12 grid gap-5 md:grid-cols-3">
             {testimonials.map((person) => (
@@ -398,12 +363,12 @@ export default function LandingPage() {
       <section className="bg-mist py-16 dark:bg-neutral-950 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeading
-            eyebrow="Pricing"
-            title="Simple, demo-only pricing"
-            description="These tiers are illustrative. The live demo is fully free and runs entirely in your browser."
+            eyebrow={t("landing.pricingEyebrow")}
+            title={t("landing.pricingTitle")}
+            description={t("landing.pricingDesc")}
           />
           <div className="mx-auto mt-6 flex justify-center">
-            <Badge tone="amber">Demo pricing - not a real purchase</Badge>
+            <Badge tone="amber">{t("landing.pricingBadge")}</Badge>
           </div>
           <div className="mt-10 grid gap-6 lg:grid-cols-3">
             {pricingTiers.map((tier) => (
@@ -417,7 +382,7 @@ export default function LandingPage() {
               >
                 {tier.highlighted && (
                   <span className="absolute -top-3 left-6 rounded-full bg-emerald-500 px-3 py-1 text-xs font-bold text-white">
-                    Most complete
+                    {t("landing.mostComplete")}
                   </span>
                 )}
                 <p className="text-sm font-bold text-neutral-950 dark:text-white">{tier.name}</p>
@@ -454,27 +419,24 @@ export default function LandingPage() {
         <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
           <div>
             <h2 className="text-3xl font-bold tracking-normal text-neutral-950 dark:text-white">
-              Private by design, useful from the first login.
+              {t("landing.privacyTitle")}
             </h2>
             <p className="mt-4 text-base leading-7 text-neutral-600 dark:text-neutral-300">
-              This version is frontend-only. Demo data stays in LocalStorage, which makes the project
-              simple to inspect, reset, and deploy.
+              {t("landing.privacyDesc")}
             </p>
             <div className="mt-6 space-y-3">
-              {[
-                "No backend required for the demo",
-                "Reusable React components and routes",
-                "Vercel-ready Vite build"
-              ].map((item) => (
-                <div key={item} className="flex items-center gap-3 text-sm font-semibold">
-                  <CheckCircle2 className="text-emerald-500" size={19} />
-                  <span>{item}</span>
-                </div>
-              ))}
+              {[t("landing.privacyPoint1"), t("landing.privacyPoint2"), t("landing.privacyPoint3")].map(
+                (item) => (
+                  <div key={item} className="flex items-center gap-3 text-sm font-semibold">
+                    <CheckCircle2 className="text-emerald-500" size={19} />
+                    <span>{item}</span>
+                  </div>
+                )
+              )}
             </div>
             <Link to="/register" className="mt-8 inline-block">
               <Button size="lg">
-                Launch the demo
+                {t("landing.launchDemo")}
                 <ArrowRight size={19} />
               </Button>
             </Link>
@@ -483,13 +445,13 @@ export default function LandingPage() {
             <div className="rounded-2xl bg-neutral-950 p-6 text-white dark:bg-white dark:text-neutral-950">
               <BarChart3 size={26} />
               <p className="mt-6 text-3xl font-bold">56%</p>
-              <p className="mt-2 text-sm opacity-75">Demo monthly savings rate</p>
+              <p className="mt-2 text-sm opacity-75">{t("landing.savingsRateLabel")}</p>
             </div>
             <div className="rounded-2xl border border-neutral-200 bg-white p-6 dark:border-white/10 dark:bg-neutral-900">
               <ShieldCheck className="text-indigo-500" size={26} />
               <p className="mt-6 text-3xl font-bold">Local</p>
               <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
-                Data lives in the browser for this portfolio build.
+                {t("landing.localLabel")}
               </p>
             </div>
           </div>

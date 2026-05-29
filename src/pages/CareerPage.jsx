@@ -18,6 +18,7 @@ import { ProgressBar } from "../components/ProgressBar";
 import { SkillEditor } from "../components/SkillEditor";
 import { StatCard } from "../components/StatCard";
 import { useDemoData } from "../hooks/useDemoData";
+import { useI18n } from "../hooks/useI18n";
 import { calculateCareerReadiness } from "../utils/finance";
 
 export default function CareerPage() {
@@ -31,6 +32,7 @@ export default function CareerPage() {
     updateCareer,
     updateProfile
   } = useDemoData();
+  const { t } = useI18n();
   const career = data.career;
   const activeApplications = career.applications.filter((application) =>
     ["Applied", "Interview"].includes(application.status)
@@ -47,46 +49,43 @@ export default function CareerPage() {
 
   return (
     <div>
-      <PageHeader
-        title="Career"
-        description="Shape your target role, skills, roadmap, project ideas, and job applications."
-      />
+      <PageHeader title={t("career.title")} description={t("career.desc")} />
 
       <div className="grid gap-4 md:grid-cols-4">
         <StatCard
-          title="Target role"
+          title={t("career.targetRole")}
           value={career.targetRole}
-          detail="Editable below"
+          detail={t("career.editableBelow")}
           icon={Target}
           color="indigo"
         />
         <StatCard
-          title="Active applications"
+          title={t("career.activeApplications")}
           value={activeApplications}
-          detail="Applied or interviewing"
+          detail={t("career.appliedOrInterviewing")}
           icon={BriefcaseBusiness}
           color="emerald"
         />
         <StatCard
-          title="Progress score"
+          title={t("career.progressScore")}
           value={`${career.progressScore}%`}
-          detail="Adjust as your portfolio improves"
+          detail={t("career.progressScoreDetail")}
           icon={TrendingUp}
           color="amber"
         />
         <StatCard
-          title="Career readiness"
+          title={t("career.careerReadiness")}
           value={`${readiness}`}
-          detail="Blended score out of 100"
+          detail={t("career.readinessDetail")}
           icon={Gauge}
           color="rose"
         />
       </div>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[0.8fr_1.2fr]">
-        <Card title="Career profile">
+        <Card title={t("career.careerProfile")}>
           <label className="text-sm font-bold text-neutral-700 dark:text-neutral-200">
-            Target role
+            {t("career.targetRole")}
             <input
               value={career.targetRole}
               onChange={(event) => updateTargetRole(event.target.value)}
@@ -96,10 +95,10 @@ export default function CareerPage() {
           </label>
           <div className="mt-6">
             <ProgressBar
-              label="Career Progress"
+              label={t("career.careerProgress")}
               value={career.progressScore}
               color="indigo"
-              detail="Blend of skills, applications, and portfolio readiness."
+              detail={t("career.careerProgressDetail")}
             />
             <input
               value={career.progressScore}
@@ -108,14 +107,14 @@ export default function CareerPage() {
               min="0"
               max="100"
               type="range"
-              aria-label="Career progress score"
+              aria-label={t("career.progressScore")}
             />
           </div>
         </Card>
 
-        <Card title="Skill progress" description="How strong each core skill is right now.">
+        <Card title={t("career.skillProgress")} description={t("career.skillProgressDesc")}>
           {skillProgress.length === 0 ? (
-            <EmptyState icon={Gauge} title="No skills tracked yet" description="Add skills below to track their progress." />
+            <EmptyState icon={Gauge} title={t("career.noSkills")} description={t("career.noSkillsDesc")} />
           ) : (
             <div className="space-y-5">
               {skillProgress.map((skill, index) => (
@@ -131,16 +130,16 @@ export default function CareerPage() {
         </Card>
       </div>
 
-      <Card className="mt-6" title="Skills map" description="Separate what you have from what to build next.">
+      <Card className="mt-6" title={t("career.skillsMap")} description={t("career.skillsMapDesc")}>
         <div className="grid gap-6 lg:grid-cols-2">
           <SkillEditor
-            title="Skills list"
+            title={t("career.skillsList")}
             skills={career.skills}
             onAdd={(skill) => addSkill(skill, "skills")}
             onRemove={(skill) => removeSkill(skill, "skills")}
           />
           <SkillEditor
-            title="Missing skills"
+            title={t("career.missingSkills")}
             skills={career.missingSkills}
             tone="amber"
             onAdd={(skill) => addSkill(skill, "missingSkills")}
@@ -150,9 +149,9 @@ export default function CareerPage() {
       </Card>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-2">
-        <Card title="Project recommendations" description="Portfolio ideas mapped to your target role.">
+        <Card title={t("career.recommendations")} description={t("career.recommendationsDesc")}>
           {recommendations.length === 0 ? (
-            <EmptyState icon={Lightbulb} title="No recommendations" />
+            <EmptyState icon={Lightbulb} title={t("career.recommendations")} />
           ) : (
             <div className="space-y-4">
               {recommendations.map((project) => (
@@ -186,9 +185,9 @@ export default function CareerPage() {
           )}
         </Card>
 
-        <Card title="Career roadmap" description="A 3-month plan toward your target role.">
+        <Card title={t("career.roadmap")} description={t("career.roadmapDesc")}>
           {roadmap.length === 0 ? (
-            <EmptyState icon={MapIcon} title="No roadmap yet" />
+            <EmptyState icon={MapIcon} title={t("career.roadmap")} />
           ) : (
             <ol className="relative space-y-5 border-l border-neutral-200 pl-6 dark:border-white/10">
               {roadmap.map((step) => (
@@ -196,7 +195,7 @@ export default function CareerPage() {
                   <button
                     type="button"
                     onClick={() => toggleRoadmapStep(step.id)}
-                    aria-label={step.done ? "Mark step as not done" : "Mark step as done"}
+                    aria-label={t("career.done")}
                     className="focus-ring absolute -left-[34px] top-0 rounded-full bg-white dark:bg-neutral-900"
                   >
                     {step.done ? (
@@ -209,7 +208,7 @@ export default function CareerPage() {
                     <span className="text-xs font-bold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">
                       {step.phase}
                     </span>
-                    {step.done && <Badge tone="emerald">Done</Badge>}
+                    {step.done && <Badge tone="emerald">{t("career.done")}</Badge>}
                   </div>
                   <h3
                     className={`mt-1 text-sm font-bold ${
@@ -232,8 +231,8 @@ export default function CareerPage() {
 
       <Card
         className="mt-6"
-        title="Job application tracker"
-        description="Add roles and update status as conversations move."
+        title={t("career.jobTracker")}
+        description={t("career.jobTrackerDesc")}
       >
         <JobApplicationForm onAdd={addApplication} />
         <div className="mt-5">

@@ -12,18 +12,20 @@ import { NavLink } from "react-router-dom";
 import { AppLogo } from "./AppLogo";
 import { Button } from "./Button";
 import { useAuth } from "../hooks/useAuth";
+import { useI18n } from "../hooks/useI18n";
 
 const navItems = [
-  { to: "/app", label: "Dashboard", icon: LayoutDashboard, end: true },
-  { to: "/app/finance", label: "Finance", icon: WalletCards },
-  { to: "/app/career", label: "Career", icon: BriefcaseBusiness },
-  { to: "/app/resume", label: "Resume Analyzer", icon: FileText },
-  { to: "/app/advisor", label: "AI Advisor", icon: MessageSquareText },
-  { to: "/app/settings", label: "Settings", icon: Settings }
+  { to: "/app", labelKey: "nav.dashboard", icon: LayoutDashboard, end: true },
+  { to: "/app/finance", labelKey: "nav.finance", icon: WalletCards },
+  { to: "/app/career", labelKey: "nav.career", icon: BriefcaseBusiness },
+  { to: "/app/resume", labelKey: "nav.resume", icon: FileText },
+  { to: "/app/advisor", labelKey: "nav.advisor", icon: MessageSquareText },
+  { to: "/app/settings", labelKey: "nav.settings", icon: Settings }
 ];
 
 export function Sidebar({ onClose }) {
   const { logout, currentUser } = useAuth();
+  const { t } = useI18n();
 
   return (
     <aside className="flex h-full w-72 flex-col border-r border-neutral-200 bg-white px-4 py-5 dark:border-white/10 dark:bg-neutral-950">
@@ -42,7 +44,7 @@ export function Sidebar({ onClose }) {
       </div>
 
       <nav className="mt-8 space-y-1">
-        {navItems.map(({ to, label, icon: Icon, end }) => (
+        {navItems.map(({ to, labelKey, icon: Icon, end }) => (
           <NavLink
             key={to}
             to={to}
@@ -57,21 +59,21 @@ export function Sidebar({ onClose }) {
             }
           >
             <Icon size={19} />
-            <span>{label}</span>
+            <span>{t(labelKey)}</span>
           </NavLink>
         ))}
       </nav>
 
       <div className="mt-auto rounded-2xl border border-emerald-500/15 bg-emerald-500/10 p-4 dark:border-emerald-400/20 dark:bg-emerald-400/10">
         <p className="text-sm font-bold text-neutral-950 dark:text-white">
-          {currentUser?.name ?? "Demo user"}
+          {currentUser?.name ?? t("common.demoUser")}
         </p>
         <p className="mt-1 text-xs leading-5 text-neutral-500 dark:text-neutral-400">
-          Your workspace is saved locally in this browser.
+          {t("auth.signInHint")}
         </p>
         <Button variant="ghost" size="sm" className="mt-3 w-full justify-start" onClick={logout}>
           <LogOut size={17} />
-          Sign out
+          {t("common.signOut")}
         </Button>
       </div>
     </aside>

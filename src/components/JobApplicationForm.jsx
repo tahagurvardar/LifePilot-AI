@@ -1,6 +1,7 @@
 import { PlusCircle } from "lucide-react";
 import { useState } from "react";
 import { jobStatuses } from "../data/demoData";
+import { useI18n } from "../hooks/useI18n";
 import { Button } from "./Button";
 
 const defaultForm = {
@@ -11,6 +12,7 @@ const defaultForm = {
 };
 
 export function JobApplicationForm({ onAdd }) {
+  const { t } = useI18n();
   const [form, setForm] = useState(defaultForm);
 
   function updateField(field, value) {
@@ -30,14 +32,14 @@ export function JobApplicationForm({ onAdd }) {
         value={form.company}
         onChange={(event) => updateField("company", event.target.value)}
         className="field"
-        placeholder="Company"
+        placeholder={t("career.company")}
         type="text"
       />
       <input
         value={form.role}
         onChange={(event) => updateField("role", event.target.value)}
         className="field"
-        placeholder="Role"
+        placeholder={t("career.role")}
         type="text"
       />
       <select
@@ -59,7 +61,7 @@ export function JobApplicationForm({ onAdd }) {
       />
       <Button type="submit" variant="accent">
         <PlusCircle size={18} />
-        Track job
+        {t("career.trackJob")}
       </Button>
     </form>
   );

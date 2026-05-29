@@ -1,5 +1,6 @@
 import { BriefcaseBusiness } from "lucide-react";
 import { jobStatuses } from "../data/demoData";
+import { useI18n } from "../hooks/useI18n";
 import { EmptyState } from "./EmptyState";
 
 const statusStyles = {
@@ -11,12 +12,14 @@ const statusStyles = {
 };
 
 export function ApplicationTable({ applications, onUpdate }) {
+  const { t } = useI18n();
+
   if (!applications.length) {
     return (
       <EmptyState
         icon={BriefcaseBusiness}
-        title="No applications tracked"
-        description="Add a company and role above to start tracking your job pipeline."
+        title={t("career.noApplications")}
+        description={t("career.noApplicationsDesc")}
       />
     );
   }
@@ -26,10 +29,10 @@ export function ApplicationTable({ applications, onUpdate }) {
       <table className="min-w-full divide-y divide-neutral-200 text-left text-sm dark:divide-white/10">
         <thead className="bg-neutral-50 text-xs uppercase text-neutral-500 dark:bg-neutral-900 dark:text-neutral-400">
           <tr>
-            <th className="px-4 py-3 font-bold">Company</th>
-            <th className="px-4 py-3 font-bold">Role</th>
-            <th className="px-4 py-3 font-bold">Status</th>
-            <th className="px-4 py-3 font-bold">Date</th>
+            <th className="px-4 py-3 font-bold">{t("career.company")}</th>
+            <th className="px-4 py-3 font-bold">{t("career.role")}</th>
+            <th className="px-4 py-3 font-bold">{t("career.status")}</th>
+            <th className="px-4 py-3 font-bold">{t("career.date")}</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-neutral-200 bg-white dark:divide-white/10 dark:bg-neutral-950">
