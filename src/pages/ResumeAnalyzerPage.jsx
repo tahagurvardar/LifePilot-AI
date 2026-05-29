@@ -159,12 +159,31 @@ export default function ResumeAnalyzerPage() {
 
   async function copySummary() {
     if (!result) return;
+    const text = result.improvedSummary;
+    let ok = false;
+
     try {
-      await navigator.clipboard.writeText(result.improvedSummary);
+      await navigator.clipboard.writeText(text);
+      ok = true;
+    } catch {
+      // Fallback for browsers/contexts where the async Clipboard API is blocked.
+      try {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        ok = document.execCommand("copy");
+        document.body.removeChild(textarea);
+      } catch {
+        ok = false;
+      }
+    }
+
+    if (ok) {
       setCopied(true);
       window.setTimeout(() => setCopied(false), 2000);
-    } catch {
-      setCopied(false);
     }
   }
 

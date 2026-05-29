@@ -280,7 +280,7 @@ export default function LandingPage() {
                 <Sparkles size={14} />
                 Portfolio demo - no backend required
               </Badge>
-              <h1 className="text-5xl font-bold tracking-normal text-neutral-950 dark:text-white sm:text-6xl lg:text-7xl">
+              <h1 className="text-4xl font-bold tracking-normal text-neutral-950 dark:text-white sm:text-5xl md:text-6xl lg:text-7xl">
                 Plan money. Grow career. Move with clarity.
               </h1>
               <p className="mt-5 max-w-2xl text-lg leading-8 text-neutral-600 dark:text-neutral-300 sm:text-xl">

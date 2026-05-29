@@ -7,16 +7,7 @@ import { countries, currencies, languages } from "../data/demoData";
 import { useAuth } from "../hooks/useAuth";
 import { useDemoData } from "../hooks/useDemoData";
 import { useTheme } from "../hooks/useTheme";
-
-function initialsOf(name) {
-  return (name || "")
-    .split(" ")
-    .map((part) => part[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-}
+import { getInitials } from "../utils/user";
 
 export default function SettingsPage() {
   const { currentUser, updateUser } = useAuth();
@@ -64,7 +55,7 @@ export default function SettingsPage() {
         <Card title="Profile" description={currentUser?.email}>
           <div className="mb-6 flex items-center gap-4">
             <div className="grid h-16 w-16 place-items-center rounded-2xl bg-gradient-to-br from-emerald-400 to-indigo-500 text-xl font-bold text-white">
-              {initialsOf(profileForm.name) || <UserRound size={26} />}
+              {getInitials(profileForm.name) || <UserRound size={26} />}
             </div>
             <div>
               <p className="text-sm font-bold text-neutral-950 dark:text-white">

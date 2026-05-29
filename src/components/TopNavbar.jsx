@@ -2,6 +2,7 @@ import { Bell, Menu, Search } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { ThemeToggle } from "./ThemeToggle";
 import { useAuth } from "../hooks/useAuth";
+import { getInitials } from "../utils/user";
 
 const titles = {
   "/app": "Dashboard",
@@ -16,11 +17,7 @@ export function TopNavbar({ onMenuClick }) {
   const location = useLocation();
   const { currentUser } = useAuth();
   const title = titles[location.pathname] ?? "LifePilot AI";
-  const initials = currentUser?.name
-    ?.split(" ")
-    .map((part) => part[0])
-    .slice(0, 2)
-    .join("");
+  const initials = getInitials(currentUser?.name);
 
   return (
     <header className="sticky top-0 z-30 border-b border-neutral-200 bg-mist/90 px-4 py-3 backdrop-blur-xl dark:border-white/10 dark:bg-neutral-950/80 sm:px-6">

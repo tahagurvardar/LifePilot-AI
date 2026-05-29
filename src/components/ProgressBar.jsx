@@ -1,11 +1,12 @@
 export function ProgressBar({ value, label, detail, color = "emerald" }) {
   const boundedValue = Math.min(Math.max(Number(value) || 0, 0), 100);
-  const fill =
-    color === "indigo"
-      ? "from-indigo-500 to-sky-400"
-      : color === "amber"
-        ? "from-amber-500 to-orange-400"
-        : "from-emerald-500 to-teal-400";
+  const fills = {
+    indigo: "from-indigo-500 to-sky-400",
+    amber: "from-amber-500 to-orange-400",
+    rose: "from-rose-500 to-red-400",
+    emerald: "from-emerald-500 to-teal-400"
+  };
+  const fill = fills[color] ?? fills.emerald;
 
   return (
     <div>
